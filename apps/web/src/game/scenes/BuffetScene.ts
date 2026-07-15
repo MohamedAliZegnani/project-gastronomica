@@ -30,10 +30,10 @@ export class BuffetScene extends Phaser.Scene {
   private itemGroup!: Phaser.Physics.Arcade.Group;
   private worldItems: ItemEntity[] = [];
 
-  private interactKey!: Phaser.Input.Keyboard.Key;
-  private dropKey!: Phaser.Input.Keyboard.Key;
-  private pauseKey!: Phaser.Input.Keyboard.Key;
-  private helpKey!: Phaser.Input.Keyboard.Key;
+  private interactKey?: Phaser.Input.Keyboard.Key;
+  private dropKey?: Phaser.Input.Keyboard.Key;
+  private pauseKey?: Phaser.Input.Keyboard.Key;
+  private helpKey?: Phaser.Input.Keyboard.Key;
 
   private paused = false;
   private helpVisible = false;
@@ -75,10 +75,19 @@ export class BuffetScene extends Phaser.Scene {
     this.audio.playBoot();
 
     try {
-      generateGameAssets(this);
-      this.mapDef.paint(this);
+      // Assets/backdrop already built in Preload — only rebuild if missing.
+      if (!this.textures.exists("player")) generateGameAssets(this);
+      if (!this.textures.exists(this.mapDef.bgKey)) this.mapDef.paint(this);
     } catch (err) {
       console.error("[buffet] asset rebuild failed", err);
+    }
+
+    if (!this.textures.exists(this.mapDef.bgKey)) {
+      const g = this.make.graphics({ x: 0, y: 0 }, false);
+      g.fillStyle(0xc4a574);
+      g.fillRect(0, 0, MAP_W, MAP_H);
+      g.generateTexture(this.mapDef.bgKey, MAP_W, MAP_H);
+      g.destroy();
     }
 
     this.add.image(0, 0, this.mapDef.bgKey).setOrigin(0, 0).setDepth(0);
@@ -173,6 +182,11 @@ export class BuffetScene extends Phaser.Scene {
       this.mapDef.seats,
       this.mapDef.door,
     );
+
+    this.buildHud();
+    this.buildRecipeRibbon();
+    this.buildOverlay();
+
     // Prep window so trays can be stocked before the first wave
     this.tip("Prep time! Stock the buffet — guests arrive soon");
     this.time.delayedCall(12000, () => {
@@ -181,15 +195,15 @@ export class BuffetScene extends Phaser.Scene {
       this.tip("Group arriving — hand out clean plates!");
     });
 
-    this.buildHud();
-    this.buildRecipeRibbon();
-    this.buildOverlay();
-
-    const kb = this.input.keyboard!;
-    this.interactKey = kb.addKey(Phaser.Input.Keyboard.KeyCodes.E);
-    this.dropKey = kb.addKey(Phaser.Input.Keyboard.KeyCodes.Q);
-    this.pauseKey = kb.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
-    this.helpKey = kb.addKey(Phaser.Input.Keyboard.KeyCodes.H);
+    const kb = this.input.keyboard;
+    if (kb) {
+      this.interactKey = kb.addKey(Phaser.Input.Keyboard.KeyCodes.E);
+      this.dropKey = kb.addKey(Phaser.Input.Keyboard.KeyCodes.Q);
+      this.pauseKey = kb.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
+      this.helpKey = kb.addKey(Phaser.Input.Keyboard.KeyCodes.H);
+    } else {
+      console.warn("[buffet] No keyboard — click the game canvas, then use WASD/E");
+    }
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.cleanup());
     this.events.once(Phaser.Scenes.Events.DESTROY, () => this.cleanup());
@@ -419,12 +433,12 @@ export class BuffetScene extends Phaser.Scene {
   }
 
   update(_t: number, delta: number) {
-    if (Phaser.Input.Keyboard.JustDown(this.pauseKey)) {
+    if (this.pauseKey && Phaser.Input.Keyboard.JustDown(this.pauseKey)) {
       this.paused = !this.paused;
       this.helpVisible = false;
       this.refreshOverlay();
     }
-    if (Phaser.Input.Keyboard.JustDown(this.helpKey)) {
+    if (this.helpKey && Phaser.Input.Keyboard.JustDown(this.helpKey)) {
       this.helpVisible = !this.helpVisible;
       if (this.helpVisible) this.paused = false;
       this.refreshOverlay();
@@ -487,7 +501,7 @@ export class BuffetScene extends Phaser.Scene {
       this.refreshScoreHud();
     }
 
-    if (Phaser.Input.Keyboard.JustDown(this.dropKey)) {
+    if (this.dropKey && Phaser.Input.Keyboard.JustDown(this.dropKey)) {
       const dropped = this.player.drop();
       if (dropped) {
         this.trackWorldItem(dropped);
@@ -500,7 +514,7 @@ export class BuffetScene extends Phaser.Scene {
       this.prompt.setVisible(true);
       this.prompt.setPosition(target.x, target.y);
       this.promptLabel.setText(target.prompt);
-      if (Phaser.Input.Keyboard.JustDown(this.interactKey)) {
+      if (this.interactKey && Phaser.Input.Keyboard.JustDown(this.interactKey)) {
         this.resolveInteract(target);
       }
     } else {
@@ -866,9 +880,10 @@ export class BuffetScene extends Phaser.Scene {
   }
 
   private tip(msg: string) {
+    if (!this.hudHint) return;
     this.hudHint.setText(msg).setVisible(true);
     this.time.delayedCall(2200, () => {
-      if (this.hudHint.text === msg) this.hudHint.setVisible(false);
+      if (this.hudHint?.text === msg) this.hudHint.setVisible(false);
     });
   }
 

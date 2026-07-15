@@ -4,6 +4,7 @@ import { getMap, MAP_H, MAP_W } from "../maps/catalog";
 
 /**
  * Fail-safe preload: build sprites + selected map backdrop, then enter kitchen.
+ * Heavy work is chunked so the "Loading…" frame can paint and errors surface.
  */
 export class PreloadScene extends Phaser.Scene {
   constructor() {
@@ -31,32 +32,79 @@ export class PreloadScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
+    const status = this.add
+      .text(width / 2, height / 2 + 36, "", {
+        fontFamily: "Sora, sans-serif",
+        fontSize: "12px",
+        color: "#8d6e63",
+      })
+      .setOrigin(0.5);
+
+    // Defer so the loading text paints before heavy canvas work.
     window.setTimeout(() => {
-      if (!this.sys.isActive()) return;
-      this.buildAssetsSafely(map.id);
-      const next = map.mode === "buffet" ? "buffet" : "kitchen";
-      this.scene.start(next);
-    }, 50);
+      void this.bootIntoMap(map.id, status);
+    }, 30);
   }
 
-  private buildAssetsSafely(mapId: string) {
+  private async bootIntoMap(
+    mapId: string,
+    status: Phaser.GameObjects.Text,
+  ) {
+    if (!this.sys.isActive()) return;
     const map = getMap(mapId);
-    try {
-      generateGameAssets(this);
-    } catch (err) {
-      console.error("[preload] generateGameAssets failed", err);
-      this.ensureMinimalSprites();
-    }
+    const next = map.mode === "buffet" ? "buffet" : "kitchen";
 
     try {
-      map.paint(this);
-    } catch (err) {
-      console.error("[preload] map paint failed", err);
-      this.ensureFallbackKitchen(map.bgKey);
-    }
+      status.setText("Building chefs & items…");
+      await this.yieldFrame();
+      if (!this.sys.isActive()) return;
 
-    if (!this.textures.exists(map.bgKey)) this.ensureFallbackKitchen(map.bgKey);
-    if (!this.textures.exists("player")) this.ensureMinimalSprites();
+      try {
+        generateGameAssets(this);
+      } catch (err) {
+        console.error("[preload] generateGameAssets failed", err);
+        this.ensureMinimalSprites();
+      }
+
+      status.setText(`Painting ${map.name}…`);
+      await this.yieldFrame();
+      if (!this.sys.isActive()) return;
+
+      try {
+        map.paint(this);
+      } catch (err) {
+        console.error("[preload] map paint failed", err);
+        this.ensureFallbackKitchen(map.bgKey);
+      }
+
+      if (!this.textures.exists(map.bgKey)) this.ensureFallbackKitchen(map.bgKey);
+      if (!this.textures.exists("player")) this.ensureMinimalSprites();
+
+      status.setText("Starting…");
+      await this.yieldFrame();
+      if (!this.sys.isActive()) return;
+
+      if (!this.scene.get(next)) {
+        throw new Error(`Scene "${next}" is not registered`);
+      }
+      this.scene.start(next);
+    } catch (err) {
+      console.error("[preload] failed to enter map", err);
+      const msg = err instanceof Error ? err.message : String(err);
+      status.setText(`Load failed: ${msg}`);
+      status.setColor("#b71c1c");
+      // Last-resort: try classic kitchen so the player isn't stuck forever
+      window.setTimeout(() => {
+        if (!this.sys.isActive()) return;
+        if (this.scene.get("kitchen")) this.scene.start("kitchen");
+      }, 1200);
+    }
+  }
+
+  private yieldFrame(): Promise<void> {
+    return new Promise((resolve) => {
+      window.requestAnimationFrame(() => resolve());
+    });
   }
 
   private ensureFallbackKitchen(key: string) {
@@ -90,6 +138,8 @@ export class PreloadScene extends Phaser.Scene {
       "item-burger",
       "customer",
       "shadow",
+      "item-grill-pan",
+      "item-plate",
     ]) {
       if (this.textures.exists(key)) continue;
       const g = this.make.graphics({ x: 0, y: 0 }, false);
