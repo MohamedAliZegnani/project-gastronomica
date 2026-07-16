@@ -10,6 +10,7 @@ import {
   type HatStyle,
 } from "../game/cosmetics/chefLook";
 import { useGamePrefs } from "../stores/gamePrefs";
+import { useKitchenProgress } from "../stores/kitchenProgress";
 import { ChefPreview, hatStyleLabel } from "./ChefPreview";
 
 function SwatchRow({
@@ -55,6 +56,7 @@ export function ChefCustomizePanel({
 }) {
   const look = useGamePrefs((s) => s.chefLook);
   const setChefLook = useGamePrefs((s) => s.setChefLook);
+  const coins = useKitchenProgress((s) => s.coins);
 
   function patch(partial: Partial<ChefLook>) {
     setChefLook(partial);
@@ -68,6 +70,13 @@ export function ChefCustomizePanel({
         <p className="chef-customize-lead">
           Same cook — swap the hat style and recolor hat, shirt, apron, skin, and shoes.
         </p>
+        <div className="kitchen-coins-bar" title="Kitchen coins">
+          <span className="kitchen-coins-icon" aria-hidden>
+            🪙
+          </span>
+          <span className="kitchen-coins-label">Coins</span>
+          <span className="kitchen-coins-value">{coins.toLocaleString()}</span>
+        </div>
       </header>
 
       <div className="chef-customize-body">

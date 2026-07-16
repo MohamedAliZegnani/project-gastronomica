@@ -5,21 +5,26 @@ import type { MapId } from "../game/maps/catalog";
 import { api } from "../lib/api";
 import { useAuthStore } from "../stores/authStore";
 import { useGamePrefs } from "../stores/gamePrefs";
+import { useKitchenProgress } from "../stores/kitchenProgress";
 
 export function GameCanvas({
   className = "",
   multiplayer,
   mapId = "diner-1",
   onReturnToLobby,
+  /** When true, coins are applied by the duo server — don't double-count locally. */
+  duoSharedProgress = false,
 }: {
   className?: string;
   multiplayer?: MultiplayerBridge;
   mapId?: MapId;
   onReturnToLobby?: () => void;
+  duoSharedProgress?: boolean;
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const gameRef = useRef<Phaser.Game | null>(null);
   const setSession = useAuthStore((s) => s.setSession);
+  const applyMatch = useKitchenProgress((s) => s.applyMatch);
   const lobbyRef = useRef(onReturnToLobby);
   lobbyRef.current = onReturnToLobby;
   const mpKey = multiplayer
@@ -30,6 +35,14 @@ export function GameCanvas({
     if (!hostRef.current) return;
 
     const onMatchComplete = (result: MatchSnapshot) => {
+      if (!duoSharedProgress) {
+        applyMatch({
+          mapId,
+          coinsEarned: result.coinsEarned,
+          performancePercent: result.performancePercent,
+          stars: result.stars,
+        });
+      }
       const authToken = useAuthStore.getState().token;
       if (!authToken) return;
       void api
@@ -74,7 +87,7 @@ export function GameCanvas({
       gameRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setSession, mpKey, mapId]);
+  }, [setSession, mpKey, mapId, duoSharedProgress, applyMatch]);
 
   useEffect(() => {
     const unsub = useGamePrefs.subscribe((state) => {

@@ -6,11 +6,13 @@ import { ControlsLegend } from "../components/ControlsLegend";
 import { GameCanvas } from "../components/GameCanvas";
 import { MapLobby } from "../components/MapLobby";
 import type { MapId } from "../game/maps/catalog";
+import { useKitchenProgress } from "../stores/kitchenProgress";
 
 /** Public play home — lobby first, then kitchen. No account wall. */
 export function PlayHomePage() {
   const [mapId, setMapId] = useState<MapId | null>(null);
   const [customizing, setCustomizing] = useState(false);
+  const coins = useKitchenProgress((s) => s.coins);
 
   return (
     <div className="play-home">
@@ -18,7 +20,7 @@ export function PlayHomePage() {
         <p className="embed-kicker">DuoArcade kitchen</p>
         <h1>Ready, Set, Cook</h1>
         <p className="play-home-lead">
-          Chaotic co-op cooking — pick a world, then wash, chop, grill, plate, and serve.
+          Chaotic co-op cooking — solo maps below, or play online with a friend (same shared kitchen).
         </p>
         <div className="play-home-actions">
           {!mapId && !customizing ? (
@@ -49,8 +51,11 @@ export function PlayHomePage() {
           <Link className="rsc-btn ghost" to="/embed">
             Embed view
           </Link>
+          <span className="kitchen-coins-pill" title="Kitchen coins">
+            🪙 {coins.toLocaleString()}
+          </span>
         </div>
-        <p className="play-home-meta">v{APP_VERSION} · no login required</p>
+        <p className="play-home-meta">v{APP_VERSION} · DuoArcade names · no login</p>
       </div>
 
       <section id="lobby" className="play-home-game">

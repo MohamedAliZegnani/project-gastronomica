@@ -703,6 +703,24 @@ export function drawCuttingBoard(ctx: CanvasRenderingContext2D, x: number, y: nu
   roundRect(ctx, x, y, 52, 34, 6, false);
 }
 
+/** Portrait cutting board for left-wall counters facing the kitchen interior. */
+export function drawCuttingBoardVertical(ctx: CanvasRenderingContext2D, x: number, y: number) {
+  ctx.fillStyle = "rgba(0,0,0,0.12)";
+  roundRect(ctx, x + 4, y + 2, 34, 52, 6, true);
+  ctx.fillStyle = "#f9a825";
+  roundRect(ctx, x, y, 34, 52, 6, true);
+  ctx.fillStyle = "#ffd54f";
+  roundRect(ctx, x + 4, y + 4, 26, 44, 4, true);
+  ctx.strokeStyle = "rgba(93,64,55,0.35)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(x + 17, y + 10);
+  ctx.lineTo(x + 17, y + 42);
+  ctx.stroke();
+  strokeInk(ctx, 3);
+  roundRect(ctx, x, y, 34, 52, 6, false);
+}
+
 export function drawSink(ctx: CanvasRenderingContext2D, x: number, y: number) {
   ctx.fillStyle = "#cfd8dc";
   roundRect(ctx, x, y, 58, 40, 8, true);
@@ -723,6 +741,59 @@ export function drawSink(ctx: CanvasRenderingContext2D, x: number, y: number) {
   ctx.fill();
   strokeInk(ctx, 3);
   roundRect(ctx, x, y, 58, 40, 8, false);
+}
+
+/**
+ * Sink on a left-wall counter: faucet toward the wall, basin / water facing east
+ * so the cook standing inside the kitchen looks into the water.
+ */
+export function drawSinkFacingEast(ctx: CanvasRenderingContext2D, x: number, y: number) {
+  ctx.fillStyle = "#cfd8dc";
+  roundRect(ctx, x, y, 48, 58, 8, true);
+  // Basin opens toward the right (kitchen interior)
+  ctx.fillStyle = "#90a4ae";
+  roundRect(ctx, x + 14, y + 8, 28, 42, 6, true);
+  ctx.fillStyle = "rgba(79,195,247,0.75)";
+  roundRect(ctx, x + 18, y + 12, 20, 34, 4, true);
+  // Faucet on the left (wall side), spout pointing at the basin
+  ctx.fillStyle = "#78909c";
+  roundRect(ctx, x + 2, y + 22, 14, 8, 3, true);
+  ctx.fillStyle = "#b0bec5";
+  roundRect(ctx, x, y + 18, 8, 16, 3, true);
+  // bubbles toward the open side
+  ctx.fillStyle = "rgba(255,255,255,0.85)";
+  ctx.beginPath();
+  ctx.arc(x + 28, y + 22, 3, 0, Math.PI * 2);
+  ctx.arc(x + 32, y + 34, 2, 0, Math.PI * 2);
+  ctx.fill();
+  strokeInk(ctx, 3);
+  roundRect(ctx, x, y, 48, 58, 8, false);
+}
+
+/**
+ * Sink on a right-wall counter: faucet toward the wall, basin / water facing west
+ * so the cook standing inside the kitchen looks into the water.
+ */
+export function drawSinkFacingWest(ctx: CanvasRenderingContext2D, x: number, y: number) {
+  ctx.fillStyle = "#cfd8dc";
+  roundRect(ctx, x, y, 48, 58, 8, true);
+  // Basin opens toward the left (kitchen interior)
+  ctx.fillStyle = "#90a4ae";
+  roundRect(ctx, x + 6, y + 8, 28, 42, 6, true);
+  ctx.fillStyle = "rgba(79,195,247,0.75)";
+  roundRect(ctx, x + 10, y + 12, 20, 34, 4, true);
+  // Faucet on the right (wall side)
+  ctx.fillStyle = "#78909c";
+  roundRect(ctx, x + 32, y + 22, 14, 8, 3, true);
+  ctx.fillStyle = "#b0bec5";
+  roundRect(ctx, x + 40, y + 18, 8, 16, 3, true);
+  ctx.fillStyle = "rgba(255,255,255,0.85)";
+  ctx.beginPath();
+  ctx.arc(x + 18, y + 22, 3, 0, Math.PI * 2);
+  ctx.arc(x + 14, y + 34, 2, 0, Math.PI * 2);
+  ctx.fill();
+  strokeInk(ctx, 3);
+  roundRect(ctx, x, y, 48, 58, 8, false);
 }
 
 export function drawFryer(ctx: CanvasRenderingContext2D, x: number, y: number) {

@@ -430,19 +430,115 @@ body {
 }
 
 .map-slot {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 0.15rem;
-  min-height: 4.5rem;
-  padding: 0.4rem 0.25rem;
+  min-height: 5.55rem;
+  padding: 0.4rem 0.25rem 1.55rem;
   border-radius: 12px;
   border: 2px solid #d7ccc8;
   background: #efebe9;
   color: #8d6e63;
   font-size: 0.68rem;
   text-align: center;
+}
+
+.map-slot-stats {
+  position: absolute;
+  left: 0.28rem;
+  right: 0.28rem;
+  bottom: 0.22rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.2rem;
+  pointer-events: none;
+}
+
+.map-slot-best {
+  font-size: 0.58rem;
+  font-weight: 800;
+  color: #5d4037;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+.map-slot.locked .map-slot-best,
+.map-slot:not(.playable) .map-slot-best {
+  color: #a1887f;
+}
+
+.map-slot-stars {
+  position: relative;
+  display: inline-block;
+  font-size: 0.95rem;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  flex-shrink: 0;
+}
+
+.map-slot-stars-track {
+  color: #cfd8dc;
+}
+
+.map-slot-stars-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  color: #f9a825;
+}
+
+.kitchen-coins-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0.65rem 0 0.85rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #fff8e1, #ffe0b2);
+  border: 2px solid #ffb74d;
+  box-shadow: 0 3px 0 #ffcc80;
+  color: #e65100;
+}
+
+.kitchen-coins-icon {
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.kitchen-coins-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.kitchen-coins-value {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #bf360c;
+  min-width: 1.5rem;
+}
+
+.kitchen-coins-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 0.9rem;
+  background: #fff8e1;
+  color: #e65100;
+  border: 2px solid #ffb74d;
+  box-shadow: 0 3px 0 #ffcc80;
 }
 
 .map-slot.playable {
@@ -507,4 +603,122 @@ button.rsc-btn {
   border: none;
   cursor: pointer;
   font: inherit;
+}
+
+/* —— DuoArcade duo map vote —— */
+.duo-vote-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 0 0 0.85rem;
+}
+
+.duo-vote-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.45rem 0.75rem;
+  border-radius: 12px;
+  background: rgba(255, 248, 225, 0.85);
+  border: 2px solid #ffcc80;
+  min-width: 140px;
+}
+
+.duo-vote-chip.has-pick {
+  border-color: #ff7043;
+}
+
+.duo-vote-chip.peer.has-pick {
+  border-color: #00897b;
+  background: #e0f2f1;
+}
+
+.duo-vote-who {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #8d6e63;
+}
+
+.duo-vote-map {
+  font-weight: 700;
+  color: #5d4037;
+  font-size: 0.92rem;
+}
+
+.map-slot.picked-mine {
+  box-shadow: 0 0 0 3px #ff7043;
+}
+
+.map-slot.picked-peer {
+  box-shadow: 0 0 0 3px #00897b;
+}
+
+.map-slot.picked-both {
+  box-shadow: 0 0 0 3px #2e7d32;
+  background: #e8f5e9 !important;
+}
+
+.duo-embed-lobby {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  height: 100%;
+  overflow: auto;
+  padding-bottom: 0.5rem;
+}
+
+.duo-ready-bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  margin-top: auto;
+  padding: 0.75rem 0.85rem;
+  border-radius: 16px;
+  background: rgba(255, 248, 225, 0.96);
+  border: 2px solid #ffcc80;
+  box-shadow: 0 -8px 24px rgba(93, 64, 55, 0.12);
+}
+
+.duo-ready-status {
+  margin: 0 0 0.55rem;
+  font-weight: 700;
+  color: #e65100;
+  font-size: 0.92rem;
+}
+
+.duo-ready-status.muted {
+  color: #8d6e63;
+  font-weight: 600;
+}
+
+.duo-ready-status.ok {
+  color: #2e7d32;
+}
+
+.duo-ready-error {
+  margin: 0 0 0.45rem;
+  color: #b71c1c;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.duo-ready-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.duo-ready-actions .rsc-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.duo-peer-ready {
+  font-size: 0.85rem;
+  color: #6d4c41;
+  font-weight: 600;
 }

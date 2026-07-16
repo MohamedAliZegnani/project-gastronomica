@@ -36,14 +36,13 @@ export function LandingPage() {
             Plate under pressure with friends — wash, chop, cook, and serve before the rush ends.
           </p>
           <div className="mt-8 flex flex-wrap gap-3 animate-[fadeUp_1s_ease_both]">
-            <Link to={user ? "/play" : "/register"}>
+            <Link to="/">
               <Button className="!px-6 !py-3">Play now</Button>
             </Link>
-            {!user ? (
-              <Link to="/guest">
-                <Button variant="secondary">Continue as guest</Button>
-              </Link>
-            ) : (
+            <Link to="/embed">
+              <Button variant="secondary">DuoArcade embed</Button>
+            </Link>
+            {user && (
               <Link to="/dashboard">
                 <Button variant="secondary">Dashboard</Button>
               </Link>

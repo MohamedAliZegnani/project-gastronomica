@@ -1,10 +1,9 @@
 import { useEffect } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
-import { AppLayout, AuthLayout, PublicLayout } from "./layouts/Layouts";
+import { AppLayout, PublicLayout } from "./layouts/Layouts";
 import { PlayHomePage } from "./pages/PlayHomePage";
 import { EmbedPage } from "./pages/EmbedPage";
 import { LandingPage } from "./pages/LandingPage";
-import { LoginPage, RegisterPage, GuestPage } from "./pages/AuthPages";
 import { DashboardPage } from "./pages/DashboardPage";
 import { PlayPage } from "./pages/PlayPage";
 import { PracticePage } from "./pages/PracticePage";
@@ -32,7 +31,7 @@ export function App() {
 
   return (
     <Routes>
-      {/* Primary: no-login play + DuoArcade embed */}
+      {/* DuoArcade embed + public play — no login / name entry */}
       <Route path="/" element={<PlayHomePage />} />
       <Route path="/embed" element={<EmbedPage />} />
       <Route path="/engine" element={<EngineSandboxPage />} />
@@ -41,11 +40,10 @@ export function App() {
         <Route path="/about" element={<LandingPage />} />
       </Route>
 
-      <Route element={<AuthLayout />}>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/guest" element={<GuestPage />} />
-      </Route>
+      {/* Auth pages removed — DuoArcade already has accounts + names */}
+      <Route path="/login" element={<Navigate to="/" replace />} />
+      <Route path="/register" element={<Navigate to="/" replace />} />
+      <Route path="/guest" element={<Navigate to="/" replace />} />
 
       <Route element={<AppLayout />}>
         <Route path="/dashboard" element={<DashboardPage />} />

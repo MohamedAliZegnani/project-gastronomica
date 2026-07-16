@@ -63,6 +63,9 @@ const APPLIANCES: ApplianceDef[] = [
   { id: "sink_a", x: 560, y: 170, kind: "sink", label: "Sink" },
   { id: "fryer_a", x: 680, y: 170, kind: "fryer", label: "Fryer" },
   { id: "pass_a", x: 800, y: 170, kind: "pass", label: "Pass · hold" },
+  // Free hold spots beside the top bar / fryer line
+  { id: "hold_bar_l", x: 620, y: 210, kind: "counter", label: "Hold" },
+  { id: "hold_bar_r", x: 740, y: 210, kind: "counter", label: "Hold" },
   { id: "juice_a", x: 100, y: 300, kind: "juice", label: "Juice", dispenses: "juice" },
   { id: "pantry_tomato", x: 100, y: 458, kind: "pantry", label: "Tomatoes", dispenses: "tomato" },
   { id: "pantry_cheese", x: 165, y: 458, kind: "pantry", label: "Mozzarella", dispenses: "lettuce" },

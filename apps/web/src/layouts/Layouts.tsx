@@ -14,19 +14,6 @@ export function PublicLayout() {
   );
 }
 
-export function AuthLayout() {
-  const user = useAuthStore((s) => s.user);
-  if (user) return <Navigate to="/dashboard" replace />;
-  return (
-    <div className="flex min-h-full flex-col">
-      <PublicNavbar />
-      <main className="flex flex-1 items-center justify-center px-4 py-10">
-        <Outlet />
-      </main>
-    </div>
-  );
-}
-
 export function AppLayout() {
   const user = useAuthStore((s) => s.user);
   const bootstrapped = useAuthStore((s) => s.bootstrapped);
@@ -37,7 +24,7 @@ export function AppLayout() {
       </div>
     );
   }
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) return <Navigate to="/" replace />;
   return (
     <div className="flex min-h-full flex-col lg:flex-row">
       <AppSidebar />

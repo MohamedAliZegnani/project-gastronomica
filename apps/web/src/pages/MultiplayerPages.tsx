@@ -5,6 +5,7 @@ import { Avatar, Button, Card, Input, PageHeader } from "../components/ui";
 import { useAuthStore } from "../stores/authStore";
 import { useLobbyStore } from "../stores/lobbyStore";
 import type { MultiplayerBridge } from "../game/createGame";
+import type { MapId } from "../game/maps/catalog";
 
 function useChefIdentity() {
   const user = useAuthStore((s) => s.user);
@@ -354,6 +355,10 @@ export function MultiplayerMatchPage() {
             peers,
           sendState: sendPlayerState,
           getRemotes: () => useLobbyStore.getState().remotePlayers,
+          authority: match.authority ?? true,
+          mapId: match.mapId ?? "diner-1",
+          sendInput: (input) => useLobbyStore.getState().sendKitchenInput(input),
+          getSnapshot: () => useLobbyStore.getState().snapshot,
         }
       : undefined;
 
@@ -373,7 +378,7 @@ export function MultiplayerMatchPage() {
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <PageHeader
           title={`Match ${match.code}`}
-          subtitle={`${peers.length} chefs · live avatar sync`}
+          subtitle={`${peers.length} chefs · shared kitchen (server)`}
         />
         <Button
           variant="secondary"
@@ -386,9 +391,13 @@ export function MultiplayerMatchPage() {
           Leave match
         </Button>
       </div>
-      <GameCanvas className="mx-auto aspect-[16/9] w-full max-w-5xl" multiplayer={bridge} />
+      <GameCanvas
+        className="mx-auto aspect-[16/9] w-full max-w-5xl"
+        multiplayer={bridge}
+        mapId={(match.mapId as MapId) ?? "diner-1"}
+      />
       <p className="mt-3 text-center text-sm text-[color:var(--color-muted)]">
-        See teammates in the kitchen · cooking is still local (shared sim arrives later)
+        Same kitchen for everyone · cook, plate, and serve together online
       </p>
     </div>
   );

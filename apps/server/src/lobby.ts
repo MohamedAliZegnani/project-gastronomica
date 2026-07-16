@@ -5,6 +5,8 @@ import {
   MATCH_DURATION_SEC,
   QUICK_MATCH_MIN,
   SocketEvents,
+  getMapLayout,
+  type KitchenInput,
   type LobbyCreatePayload,
   type LobbyJoinPayload,
   type LobbyMode,
@@ -16,6 +18,7 @@ import {
   type MatchStartPayload,
   type PlayerNetState,
 } from "@gastronomica/shared";
+import { createAuthoritySim, type AuthoritySim } from "./kitchen/createAuthoritySim.js";
 
 type RoomPlayer = LobbyPlayer & {
   socketId: string;
@@ -30,6 +33,8 @@ type Room = {
   countdown: number | null;
   countdownTimer: ReturnType<typeof setInterval> | null;
   seed: number;
+  kitchen: AuthoritySim | null;
+  kitchenTimer: ReturnType<typeof setInterval> | null;
 };
 
 const CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -87,6 +92,14 @@ export function attachLobby(io: Server) {
     room.countdown = null;
   }
 
+  function stopKitchen(room: Room) {
+    if (room.kitchenTimer) {
+      clearInterval(room.kitchenTimer);
+      room.kitchenTimer = null;
+    }
+    room.kitchen = null;
+  }
+
   function leaveRoom(socket: Socket, opts: { silent?: boolean } = {}) {
     const code = socketRoom.get(socket.id);
     if (!code) return;
@@ -97,9 +110,11 @@ export function attachLobby(io: Server) {
 
     const player = room.players.get(socket.id);
     room.players.delete(socket.id);
+    room.kitchen?.removePlayer(socket.id);
 
     if (room.players.size === 0) {
       clearCountdown(room);
+      stopKitchen(room);
       rooms.delete(code);
       return;
     }
@@ -138,6 +153,8 @@ export function attachLobby(io: Server) {
       countdown: null,
       countdownTimer: null,
       seed: Math.floor(Math.random() * 1_000_000),
+      kitchen: null,
+      kitchenTimer: null,
     };
     rooms.set(code, room);
     return room;
@@ -196,15 +213,80 @@ export function attachLobby(io: Server) {
   function startMatch(room: Room) {
     room.phase = "playing";
     room.countdown = null;
+    stopKitchen(room);
+
+    const roster = [...room.players.values()]
+      .sort((a, b) => a.slot - b.slot)
+      .map((p) => ({
+        id: p.id,
+        displayName: p.displayName,
+        avatarHue: p.avatarHue,
+        slot: p.slot,
+      }));
+
+    const layout = getMapLayout("diner-1");
+    const duration = layout.matchSeconds || MATCH_DURATION_SEC;
+    const kitchen = createAuthoritySim("diner-1", room.code, room.seed, duration, roster);
+    room.kitchen = kitchen;
+
     const payload: MatchStartPayload = {
       code: room.code,
       seed: room.seed,
-      durationSec: MATCH_DURATION_SEC,
+      durationSec: duration,
       startedAt: Date.now(),
       players: publicState(room).players,
+      mapId: "diner-1",
+      authority: true,
     };
     io.to(room.code).emit(SocketEvents.MATCH_START, payload);
     emitState(room);
+
+    // Immediate first snapshot, then 20 Hz
+    io.to(room.code).emit(SocketEvents.MATCH_SNAPSHOT, kitchen.snapshot());
+    let last = Date.now();
+    room.kitchenTimer = setInterval(() => {
+      if (!rooms.has(room.code) || !room.kitchen) {
+        stopKitchen(room);
+        return;
+      }
+      const now = Date.now();
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      room.kitchen.tick(dt);
+      io.to(room.code).emit(SocketEvents.MATCH_SNAPSHOT, room.kitchen.snapshot());
+      if (room.kitchen.ended) {
+        const snap = room.kitchen.snapshot();
+        const performancePercent = Math.round(
+          Math.max(
+            0,
+            Math.min(
+              100,
+              Math.min(50, (snap.score / 1000) * 50) +
+                Math.min(25, (snap.served / 8) * 25) +
+                Math.min(10, (snap.tips / 180) * 10) +
+                Math.min(15, (snap.combo / 8) * 15) -
+                snap.walkouts * 6 -
+                snap.burns * 2.5,
+            ),
+          ),
+        );
+        const endStars: 0 | 1 | 2 | 3 =
+          performancePercent >= 100 ? 3 : performancePercent >= 70 ? 2 : performancePercent >= 40 ? 1 : 0;
+        io.to(room.code).emit(SocketEvents.MATCH_END, {
+          code: room.code,
+          score: snap.score,
+          served: snap.served,
+          walkouts: snap.walkouts,
+          tips: snap.tips,
+          burns: snap.burns,
+          stars: endStars,
+          performancePercent,
+        });
+        room.phase = "ended";
+        stopKitchen(room);
+        emitState(room);
+      }
+    }, 50);
   }
 
   function tryAutoStart(room: Room) {
@@ -359,16 +441,25 @@ export function attachLobby(io: Server) {
     });
 
     socket.on(SocketEvents.PLAYER_STATE, (state: PlayerNetState) => {
+      // Legacy avatar-only sync — ignored when authority kitchen is running
       const code = socketRoom.get(socket.id);
       if (!code) return;
       const room = rooms.get(code);
-      if (!room || room.phase !== "playing") return;
+      if (!room || room.phase !== "playing" || room.kitchen) return;
       const player = room.players.get(socket.id);
       if (!player) return;
       socket.to(code).emit(SocketEvents.PLAYER_STATE, {
         ...state,
         id: player.id,
       });
+    });
+
+    socket.on(SocketEvents.MATCH_INPUT, (input: KitchenInput) => {
+      const code = socketRoom.get(socket.id);
+      if (!code) return;
+      const room = rooms.get(code);
+      if (!room?.kitchen || room.phase !== "playing") return;
+      room.kitchen.setInput(socket.id, input ?? { ax: 0, ay: 0, sprint: false, interact: false, drop: false });
     });
 
     socket.on("disconnect", () => {

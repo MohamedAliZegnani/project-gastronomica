@@ -2,7 +2,10 @@ import { io, type Socket } from "socket.io-client";
 import { create } from "zustand";
 import {
   SocketEvents,
+  type KitchenInput,
+  type KitchenSnapshot,
   type LobbyState,
+  type MatchEndPayload,
   type MatchmakingStatus,
   type MatchStartPayload,
   type PlayerNetState,
@@ -20,6 +23,8 @@ type LobbyStore = {
   matchmaking: MatchmakingStatus | null;
   error: string | null;
   remotePlayers: Record<string, PlayerNetState>;
+  snapshot: KitchenSnapshot | null;
+  matchEnd: MatchEndPayload | null;
   connect: () => Socket;
   disconnect: () => void;
   clearError: () => void;
@@ -31,6 +36,7 @@ type LobbyStore = {
   findMatch: (displayName: string, avatarHue: number) => void;
   cancelMatchmaking: () => void;
   sendPlayerState: (state: Omit<PlayerNetState, "id"> & { id?: string }) => void;
+  sendKitchenInput: (input: KitchenInput) => void;
   clearMatch: () => void;
 };
 
@@ -51,7 +57,25 @@ function bindSocket(socket: Socket, set: (partial: Partial<LobbyStore>) => void,
   });
 
   socket.on(SocketEvents.MATCH_START, (match: MatchStartPayload) => {
-    set({ match, remotePlayers: {}, lobby: get().lobby ? { ...get().lobby!, phase: "playing" } : null });
+    set({
+      match: {
+        ...match,
+        mapId: match.mapId ?? "diner-1",
+        authority: match.authority ?? true,
+      },
+      remotePlayers: {},
+      snapshot: null,
+      matchEnd: null,
+      lobby: get().lobby ? { ...get().lobby!, phase: "playing" } : null,
+    });
+  });
+
+  socket.on(SocketEvents.MATCH_SNAPSHOT, (snapshot: KitchenSnapshot) => {
+    set({ snapshot });
+  });
+
+  socket.on(SocketEvents.MATCH_END, (matchEnd: MatchEndPayload) => {
+    set({ matchEnd, snapshot: get().snapshot ? { ...get().snapshot!, ended: true } : null });
   });
 
   socket.on(SocketEvents.PLAYER_STATE, (state: PlayerNetState) => {
@@ -90,6 +114,8 @@ export const useLobbyStore = create<LobbyStore>((set, get) => ({
   matchmaking: null,
   error: null,
   remotePlayers: {},
+  snapshot: null,
+  matchEnd: null,
 
   connect: () => {
     const existing = get().socket;
@@ -119,6 +145,8 @@ export const useLobbyStore = create<LobbyStore>((set, get) => ({
       match: null,
       matchmaking: null,
       remotePlayers: {},
+      snapshot: null,
+      matchEnd: null,
     });
   },
 
@@ -126,20 +154,27 @@ export const useLobbyStore = create<LobbyStore>((set, get) => ({
 
   createPrivate: (displayName, avatarHue) => {
     const socket = get().connect();
-    set({ match: null, remotePlayers: {}, error: null });
+    set({ match: null, remotePlayers: {}, snapshot: null, matchEnd: null, error: null });
     socket.emit(SocketEvents.LOBBY_CREATE, { displayName, avatarHue });
   },
 
   joinPrivate: (code, displayName, avatarHue) => {
     const socket = get().connect();
-    set({ match: null, remotePlayers: {}, error: null });
+    set({ match: null, remotePlayers: {}, snapshot: null, matchEnd: null, error: null });
     socket.emit(SocketEvents.LOBBY_JOIN, { code, displayName, avatarHue });
   },
 
   leaveLobby: () => {
     const { socket } = get();
     socket?.emit(SocketEvents.LOBBY_LEAVE);
-    set({ lobby: null, match: null, matchmaking: null, remotePlayers: {} });
+    set({
+      lobby: null,
+      match: null,
+      matchmaking: null,
+      remotePlayers: {},
+      snapshot: null,
+      matchEnd: null,
+    });
   },
 
   setReady: (ready) => {
@@ -152,7 +187,14 @@ export const useLobbyStore = create<LobbyStore>((set, get) => ({
 
   findMatch: (displayName, avatarHue) => {
     const socket = get().connect();
-    set({ lobby: null, match: null, error: null, remotePlayers: {} });
+    set({
+      lobby: null,
+      match: null,
+      error: null,
+      remotePlayers: {},
+      snapshot: null,
+      matchEnd: null,
+    });
     socket.emit(SocketEvents.MATCH_FIND, { displayName, avatarHue });
   },
 
@@ -167,7 +209,11 @@ export const useLobbyStore = create<LobbyStore>((set, get) => ({
     socket.emit(SocketEvents.PLAYER_STATE, { ...state, id: socket.id });
   },
 
-  clearMatch: () => set({ match: null, remotePlayers: {} }),
+  sendKitchenInput: (input) => {
+    get().socket?.emit(SocketEvents.MATCH_INPUT, input);
+  },
+
+  clearMatch: () => set({ match: null, remotePlayers: {}, snapshot: null, matchEnd: null }),
 }));
 
 export function useSelfId() {

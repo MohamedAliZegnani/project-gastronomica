@@ -135,6 +135,10 @@ export type MatchStartPayload = {
   durationSec: number;
   startedAt: number;
   players: LobbyPlayer[];
+  /** Shared kitchen map — server-authoritative matches use this. */
+  mapId: string;
+  /** When true, kitchen world is simulated on the server. */
+  authority: boolean;
 };
 
 export type PlayerNetState = {
@@ -173,9 +177,60 @@ export const SocketEvents = {
   MATCH_END: "match:end",
   PLAYER_STATE: "player:state",
   PLAYER_LEFT: "player:left",
+  /** Server-authoritative shared kitchen */
+  MATCH_INPUT: "match:input",
+  MATCH_SNAPSHOT: "match:snapshot",
+  /** DuoArcade embed — shared map pick */
+  DUO_JOIN: "duo:join",
+  DUO_LEAVE: "duo:leave",
+  DUO_STATE: "duo:state",
+  DUO_PICK: "duo:pick",
+  DUO_READY: "duo:ready",
+  DUO_ERROR: "duo:error",
 } as const;
 
 export type SocketEvent = (typeof SocketEvents)[keyof typeof SocketEvents];
+
+export type DuoRole = "A" | "B";
+
+export type DuoPlayerVote = {
+  role: DuoRole;
+  displayName: string;
+  mapId: string | null;
+  ready: boolean;
+  connected: boolean;
+};
+
+export type DuoMapBest = {
+  percent: number;
+  stars: 0 | 1 | 2 | 3;
+};
+
+export type DuoLobbyState = {
+  code: string;
+  phase: "lobby" | "starting" | "playing" | "ended";
+  players: { A: DuoPlayerVote | null; B: DuoPlayerVote | null };
+  countdown: number | null;
+  /** Shared duo wallet — both players see the same total. */
+  coins: number;
+  /** Best performance % per map for this duo pair. */
+  mapBest: Record<string, DuoMapBest>;
+};
+
+export type DuoJoinPayload = {
+  code: string;
+  role: DuoRole;
+  displayName: string;
+  avatarHue?: number;
+};
+
+export type DuoPickPayload = {
+  mapId: string;
+};
+
+export type DuoReadyPayload = {
+  ready: boolean;
+};
 
 export type LobbyCreatePayload = {
   displayName: string;
@@ -196,3 +251,8 @@ export type MatchFindPayload = {
   displayName: string;
   avatarHue: number;
 };
+
+export * from "./kitchenNet.js";
+export * from "./mapLayouts.js";
+export * from "./handCombine.js";
+export * from "./handCombine.js";

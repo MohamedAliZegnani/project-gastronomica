@@ -15,27 +15,16 @@ export function PublicNavbar() {
           {APP_NAME}
         </NavLink>
         <nav className="flex items-center gap-4">
+          <NavLink to="/" className={linkClass}>
+            Play
+          </NavLink>
           <NavLink to="/engine" className={linkClass}>
             Sandbox
           </NavLink>
-          {user ? (
-            <>
-              <NavLink to="/play" className={linkClass}>
-                Play
-              </NavLink>
-              <NavLink to="/dashboard" className={linkClass}>
-                Dashboard
-              </NavLink>
-            </>
-          ) : (
-            <>
-              <NavLink to="/login" className={linkClass}>
-                Login
-              </NavLink>
-              <NavLink to="/register">
-                <Button className="!py-2">Register</Button>
-              </NavLink>
-            </>
+          {user && (
+            <NavLink to="/dashboard" className={linkClass}>
+              Dashboard
+            </NavLink>
           )}
         </nav>
       </div>

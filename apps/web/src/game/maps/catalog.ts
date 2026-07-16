@@ -1,6 +1,9 @@
 import { BUFFET_1 } from "./buffet";
 import { BEACH_1 } from "./beach";
 import { DINER_1 } from "./diner";
+import { DINER_2 } from "./diner2";
+import { DINER_3 } from "./diner3";
+import { DINER_4 } from "./diner4";
 import { MALL_1 } from "./mall";
 import type { EnvInfo, MapDef, MapId } from "./types";
 
@@ -9,6 +12,9 @@ export { MAP_H, MAP_W } from "./types";
 
 export const MAPS: Record<MapId, MapDef> = {
   "diner-1": DINER_1,
+  "diner-2": DINER_2,
+  "diner-3": DINER_3,
+  "diner-4": DINER_4,
   "beach-1": BEACH_1,
   "mall-1": MALL_1,
   "buffet-1": BUFFET_1,
@@ -21,7 +27,7 @@ export const ENVIRONMENTS: EnvInfo[] = [
     blurb: "Early fast-paced grill and assembly levels.",
     difficulty: "Easy",
     accent: "#ff7043",
-    slots: ["diner-1", null, null, null, null],
+    slots: ["diner-1", "diner-2", "diner-3", "diner-4", null],
   },
   {
     id: "beach",

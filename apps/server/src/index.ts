@@ -8,6 +8,7 @@ import { Server } from "socket.io";
 import { APP_NAME, APP_VERSION, type HealthStatus } from "@gastronomica/shared";
 import { checkDatabase, getPool, setDbReady } from "./db.js";
 import { attachLobby } from "./lobby.js";
+import { attachDuoLobby } from "./duoLobby.js";
 import { migrate } from "./migrate.js";
 import { apiRouter } from "./routes.js";
 import { persistenceMode } from "./store/index.js";
@@ -17,7 +18,7 @@ dotenv.config({ path: path.resolve(__dirname, "../../../.env") });
 dotenv.config();
 
 const PORT = Number(process.env.PORT) || 3001;
-const CORS_ORIGIN = process.env.CORS_ORIGIN || "http://localhost:5173";
+const CORS_ORIGIN = process.env.CORS_ORIGIN || true;
 
 const app = express();
 app.use(cors({ origin: CORS_ORIGIN, credentials: true }));
@@ -47,10 +48,11 @@ app.use("/api/v1", apiRouter);
 
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
-  cors: { origin: CORS_ORIGIN, methods: ["GET", "POST"] },
+  cors: { origin: CORS_ORIGIN === true ? true : CORS_ORIGIN, methods: ["GET", "POST"] },
 });
 
 attachLobby(io);
+attachDuoLobby(io);
 
 async function boot() {
   const pool = getPool();
