@@ -5,6 +5,11 @@ import {
   normalizeChefLook,
   type ChefLook,
 } from "../game/cosmetics/chefLook";
+import {
+  DEFAULT_SITE_THEME,
+  isSiteThemeId,
+  type SiteThemeId,
+} from "../theme/siteThemes";
 
 type GamePrefs = {
   masterVolume: number;
@@ -12,9 +17,11 @@ type GamePrefs = {
   sfxVolume: number;
   reduceMotion: boolean;
   showPings: boolean;
+  siteTheme: SiteThemeId;
   chefLook: ChefLook;
-  setFromSettings: (partial: Partial<Omit<GamePrefs, "setFromSettings">>) => void;
+  setFromSettings: (partial: Partial<Omit<GamePrefs, "setFromSettings" | "setChefLook" | "setSiteTheme">>) => void;
   setChefLook: (look: Partial<ChefLook>) => void;
+  setSiteTheme: (theme: SiteThemeId) => void;
 };
 
 export const useGamePrefs = create<GamePrefs>()(
@@ -25,10 +32,12 @@ export const useGamePrefs = create<GamePrefs>()(
       sfxVolume: 70,
       reduceMotion: false,
       showPings: true,
+      siteTheme: DEFAULT_SITE_THEME,
       chefLook: { ...DEFAULT_CHEF_LOOK },
       setFromSettings: (partial) => set(partial),
       setChefLook: (partial) =>
         set({ chefLook: normalizeChefLook({ ...get().chefLook, ...partial }) }),
+      setSiteTheme: (siteTheme) => set({ siteTheme }),
     }),
     {
       name: "gastronomica-game-prefs",
@@ -37,6 +46,7 @@ export const useGamePrefs = create<GamePrefs>()(
         return {
           ...current,
           ...p,
+          siteTheme: isSiteThemeId(p.siteTheme) ? p.siteTheme : current.siteTheme,
           chefLook: normalizeChefLook(p.chefLook ?? current.chefLook),
         };
       },

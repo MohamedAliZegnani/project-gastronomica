@@ -13,14 +13,14 @@ import {
   drawShrimpBowl,
 } from "./buffetShared";
 import {
-  drawCuttingBoard,
+  drawCuttingBoardVertical,
   drawDoor,
   drawFryer,
   drawGrill,
   drawJuiceMachine,
   drawPlateStack,
   drawPotatoCrate,
-  drawSink,
+  drawSinkFacingEast,
   drawSteelCounter,
   drawTomatoCrate,
   drawTrash,
@@ -31,16 +31,13 @@ import {
   strokeInk,
 } from "./paintShared";
 
-const BG = "bg-buffet-3-lantern-v1";
+const BG = "bg-buffet-3-lantern-v2";
 
 /**
  * BUFFET 3 — Lantern Pavilion
  *
- * Distinct layout:
- *   • Window dining along the TOP (sunset band)
- *   • Curved tray arc in the CENTER courtyard
- *   • Cook line on the WEST wall (vertical workflow)
- *   • Paper lanterns + bamboo posts
+ * Window dining TOP · courtyard tray arc CENTER · west cook facing EAST
+ * Plates / veg pass at foot of cook · juice/trash east · door NW clear
  */
 const COLLIDERS: Collider[] = [
   { x: 480, y: 16, w: 960, h: 32 },
@@ -48,53 +45,52 @@ const COLLIDERS: Collider[] = [
   { x: 16, y: 270, w: 32, h: 540 },
   { x: 944, y: 270, w: 32, h: 540 },
   { x: 480, y: 100, w: 760, h: 40 },
-  { x: 480, y: 265, w: 360, h: 36 },
-  { x: 350, y: 300, w: 40, h: 80 },
-  { x: 610, y: 300, w: 40, h: 80 },
-  { x: 130, y: 320, w: 100, h: 280 },
-  { x: 480, y: 380, w: 120, h: 50 },
-  { x: 820, y: 300, w: 70, h: 80 },
-  { x: 760, y: 400, w: 50, h: 40 },
+  { x: 480, y: 250, w: 380, h: 40 },
+  { x: 340, y: 300, w: 40, h: 90 },
+  { x: 620, y: 300, w: 40, h: 90 },
+  { x: 130, y: 340, w: 140, h: 300 },
+  { x: 240, y: 470, w: 50, h: 40 },
+  { x: 860, y: 300, w: 70, h: 100 },
 ];
 
 const TRAYS: BuffetTrayDef[] = [
-  { id: "chicken", x: 380, y: 265, label: "Chicken", accepts: "chicken_fried", max: 6, addPerStock: 2 },
-  { id: "shrimp", x: 430, y: 240, label: "Shrimp", accepts: "shrimp_fried", max: 4, addPerStock: 2 },
-  { id: "fries", x: 480, y: 228, label: "Fries", accepts: "fries", max: 10, addPerStock: 5 },
-  { id: "tomato", x: 530, y: 240, label: "Tomatoes", accepts: "tomato_grilled", max: 2, addPerStock: 2 },
-  { id: "pepper", x: 580, y: 265, label: "Peppers", accepts: "pepper_grilled", max: 2, addPerStock: 2 },
+  { id: "chicken", x: 360, y: 255, label: "Chicken", accepts: "chicken_fried", max: 6, addPerStock: 2 },
+  { id: "shrimp", x: 420, y: 238, label: "Shrimp", accepts: "shrimp_fried", max: 4, addPerStock: 2 },
+  { id: "fries", x: 480, y: 230, label: "Fries", accepts: "fries", max: 10, addPerStock: 5 },
+  { id: "tomato", x: 540, y: 238, label: "Tomatoes", accepts: "tomato_grilled", max: 2, addPerStock: 2 },
+  { id: "pepper", x: 600, y: 255, label: "Peppers", accepts: "pepper_grilled", max: 2, addPerStock: 2 },
 ];
 
 const APPLIANCES: ApplianceDef[] = [
-  { id: "fryer_a", x: 120, y: 220, kind: "fryer", label: "Fryer" },
-  { id: "fryer_b", x: 120, y: 290, kind: "fryer", label: "Fryer" },
-  { id: "hold_fryer_l", x: 175, y: 220, kind: "counter", label: "Hold" },
-  { id: "hold_fryer_r", x: 175, y: 290, kind: "counter", label: "Hold" },
-  { id: "flour_a", x: 120, y: 360, kind: "flour", label: "Flour" },
-  { id: "grill_panel_a", x: 120, y: 420, kind: "grill_panel", label: "Pan L" },
-  { id: "grill_panel_b", x: 175, y: 420, kind: "grill_panel", label: "Pan R" },
-  { id: "sink_a", x: 120, y: 480, kind: "sink", label: "Sink" },
-  { id: "plates", x: 760, y: 400, kind: "plates", label: "Plates", dispenses: "plate" },
-  { id: "trash_a", x: 820, y: 360, kind: "trash", label: "Trash" },
-  { id: "juice_a", x: 820, y: 280, kind: "juice", label: "Juice", dispenses: "juice" },
-  { id: "prep_a", x: 440, y: 380, kind: "prep", label: "Chop" },
-  { id: "prep_b", x: 520, y: 380, kind: "prep", label: "Chop" },
-  { id: "pantry_chicken", x: 60, y: 470, kind: "pantry", label: "Chicken", dispenses: "chicken_raw" },
-  { id: "pantry_shrimp", x: 60, y: 400, kind: "pantry", label: "Shrimp", dispenses: "shrimp_raw" },
-  { id: "pantry_fries", x: 60, y: 330, kind: "pantry", label: "Raw fries", dispenses: "fries_raw" },
-  { id: "pantry_tomato", x: 820, y: 470, kind: "pantry", label: "Tomatoes", dispenses: "tomato" },
-  { id: "pantry_pepper", x: 880, y: 470, kind: "pantry", label: "Peppers", dispenses: "pepper" },
+  { id: "pantry_chicken", x: 70, y: 200, kind: "pantry", label: "Chicken", dispenses: "chicken_raw" },
+  { id: "pantry_shrimp", x: 70, y: 255, kind: "pantry", label: "Shrimp", dispenses: "shrimp_raw" },
+  { id: "pantry_fries", x: 70, y: 310, kind: "pantry", label: "Raw fries", dispenses: "fries_raw" },
+  { id: "fryer_a", x: 145, y: 220, kind: "fryer", label: "Fryer" },
+  { id: "fryer_b", x: 145, y: 290, kind: "fryer", label: "Fryer" },
+  { id: "hold_fryer_l", x: 210, y: 220, kind: "counter", label: "Hold" },
+  { id: "hold_fryer_r", x: 210, y: 290, kind: "counter", label: "Hold" },
+  { id: "flour_a", x: 145, y: 350, kind: "flour", label: "Flour" },
+  { id: "grill_panel_a", x: 130, y: 405, kind: "grill_panel", label: "Pan L" },
+  { id: "grill_panel_b", x: 175, y: 405, kind: "grill_panel", label: "Pan R" },
+  { id: "prep_a", x: 145, y: 455, kind: "prep", label: "Chop" },
+  { id: "prep_b", x: 190, y: 455, kind: "prep", label: "Chop" },
+  { id: "pantry_tomato", x: 70, y: 420, kind: "pantry", label: "Tomatoes", dispenses: "tomato" },
+  { id: "pantry_pepper", x: 70, y: 470, kind: "pantry", label: "Peppers", dispenses: "pepper" },
+  { id: "sink_a", x: 145, y: 490, kind: "sink", label: "Sink" },
+  { id: "plates", x: 240, y: 470, kind: "plates", label: "Plates", dispenses: "plate" },
+  { id: "juice_a", x: 860, y: 260, kind: "juice", label: "Juice", dispenses: "juice" },
+  { id: "trash_a", x: 860, y: 340, kind: "trash", label: "Trash" },
 ];
 
 const SEATS: CustomerSeat[] = [
-  { id: 0, x: 160, y: 135 },
-  { id: 1, x: 250, y: 128 },
-  { id: 2, x: 340, y: 122 },
-  { id: 3, x: 430, y: 120 },
-  { id: 4, x: 520, y: 120 },
-  { id: 5, x: 610, y: 122 },
-  { id: 6, x: 700, y: 128 },
-  { id: 7, x: 790, y: 135 },
+  { id: 0, x: 160, y: 130 },
+  { id: 1, x: 250, y: 130 },
+  { id: 2, x: 340, y: 130 },
+  { id: 3, x: 430, y: 130 },
+  { id: 4, x: 520, y: 130 },
+  { id: 5, x: 610, y: 130 },
+  { id: 6, x: 700, y: 130 },
+  { id: 7, x: 790, y: 130 },
 ];
 
 function drawLantern(ctx: CanvasRenderingContext2D, x: number, y: number, color: string) {
@@ -128,23 +124,40 @@ function drawBambooPost(ctx: CanvasRenderingContext2D, x: number, y: number, h: 
   }
 }
 
+function drawRotatedScaled(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  deg: number,
+  scale: number,
+  paintFn: () => void,
+) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate((deg * Math.PI) / 180);
+  ctx.scale(scale, scale);
+  ctx.translate(-cx, -cy);
+  paintFn();
+  ctx.restore();
+}
+
 function paint(scene: Phaser.Scene) {
   ensureCanvas(scene, BG, MAP_W, MAP_H, (ctx) => {
     drawWoodFloor(ctx, 0, 0, MAP_W, MAP_H, "#d7ccc8");
 
-    const sunset = ctx.createLinearGradient(0, 0, 0, 80);
+    const sunset = ctx.createLinearGradient(0, 0, 0, 72);
     sunset.addColorStop(0, "#ff8a65");
     sunset.addColorStop(0.5, "#ffb74d");
     sunset.addColorStop(1, "#ffe0b2");
     ctx.fillStyle = sunset;
-    ctx.fillRect(0, 0, MAP_W, 80);
+    ctx.fillRect(0, 0, MAP_W, 72);
     drawBanner(ctx, "LANTERN PAVILION", "#e65100", "sunset window · courtyard trays");
 
-    for (const lx of [120, 280, 440, 600, 760]) drawLantern(ctx, lx, 72, "#ff7043");
-    drawBambooPost(ctx, 40, 100, 400);
-    drawBambooPost(ctx, 910, 100, 400);
+    for (const lx of [140, 300, 460, 620, 780]) drawLantern(ctx, lx, 68, "#ff7043");
+    drawBambooPost(ctx, 40, 100, 380);
+    drawBambooPost(ctx, 910, 100, 380);
 
-    // Top dining counter
+    // Top dining — even seat spacing
     ctx.fillStyle = "#5d4037";
     roundRect(ctx, 100, 70, 760, 55, 12, true);
     ctx.fillStyle = "#8d6e63";
@@ -153,41 +166,38 @@ function paint(scene: Phaser.Scene) {
     roundRect(ctx, 100, 70, 760, 55, 12, false);
     for (const s of SEATS) drawPlaceSetting(ctx, s.x, 82);
 
-    // Curved tray courtyard
+    // Courtyard tray U
     ctx.fillStyle = "#eceff1";
-    roundRect(ctx, 320, 200, 360, 55, 16, true);
-    roundRect(ctx, 310, 210, 50, 120, 12, true);
-    roundRect(ctx, 640, 210, 50, 120, 12, true);
-    ctx.strokeStyle = "rgba(230,81,0,0.5)";
+    roundRect(ctx, 300, 200, 360, 55, 16, true);
+    roundRect(ctx, 300, 210, 48, 120, 12, true);
+    roundRect(ctx, 612, 210, 48, 120, 12, true);
+    ctx.strokeStyle = "rgba(230,81,0,0.45)";
     ctx.lineWidth = 5;
     ctx.beginPath();
-    ctx.ellipse(480, 280, 180, 50, 0, Math.PI * 1.05, Math.PI * 1.95);
+    ctx.ellipse(480, 275, 170, 48, 0, Math.PI * 1.05, Math.PI * 1.95);
     ctx.stroke();
     strokeInk(ctx, 3);
-    roundRect(ctx, 320, 200, 360, 55, 16, false);
+    roundRect(ctx, 300, 200, 360, 55, 16, false);
     for (const t of TRAYS) drawBuffetTraySlot(ctx, t.x, t.y);
 
-    // West cook column
-    drawSteelCounter(ctx, 55, 180, 110, 320);
-    drawPotatoCrate(ctx, 50, 300);
-    drawShrimpBowl(ctx, 50, 370);
-    drawChickenCrate(ctx, 50, 440);
-    drawFryer(ctx, 70, 195);
-    drawFryer(ctx, 70, 265);
-    drawFlourBowl(ctx, 65, 335);
-    drawGrill(ctx, 60, 395);
-    drawSink(ctx, 65, 455);
+    // West cook — faces east into courtyard
+    drawSteelCounter(ctx, 55, 170, 155, 340);
+    drawChickenCrate(ctx, 48, 175);
+    drawShrimpBowl(ctx, 48, 230);
+    drawPotatoCrate(ctx, 45, 285);
+    drawFryer(ctx, 95, 185, -90);
+    drawFryer(ctx, 95, 255, -90);
+    drawRotatedScaled(ctx, 145, 360, -90, 1, () => drawFlourBowl(ctx, 130, 325));
+    drawRotatedScaled(ctx, 150, 415, -90, 0.9, () => drawGrill(ctx, 100, 370));
+    drawTomatoCrate(ctx, 48, 400);
+    drawPepperCrate(ctx, 48, 450);
+    drawCuttingBoardVertical(ctx, 125, 430);
+    drawCuttingBoardVertical(ctx, 165, 430);
+    drawSinkFacingEast(ctx, 115, 460);
+    drawPlateStack(ctx, 215, 440);
 
-    // Center prep
-    drawSteelCounter(ctx, 410, 350, 160, 55);
-    drawCuttingBoard(ctx, 420, 358);
-    drawCuttingBoard(ctx, 500, 358);
-
-    drawPlateStack(ctx, 730, 370);
-    drawTomatoCrate(ctx, 790, 432);
-    drawPepperCrate(ctx, 850, 430);
-    drawJuiceMachine(ctx, 785, 250);
-    drawTrash(ctx, 785, 330);
+    drawJuiceMachine(ctx, 825, 230);
+    drawTrash(ctx, 825, 310);
     drawDoor(ctx, 40, 42);
 
     strokeInk(ctx, 6);

@@ -31,57 +31,54 @@ import {
   strokeInk,
 } from "./paintShared";
 
-const BG = "bg-buffet-5-loft-v1";
+const BG = "bg-buffet-5-loft-v2";
 
 /**
  * BUFFET 5 — Market Loft
  *
- * Distinct layout:
- *   • Mezzanine dining TOP-LEFT (8 seats)
- *   • Conveyor-style tray belt along the EAST wall
- *   • Open kitchen BOTTOM-LEFT corner
- *   • Exposed brick, warm lamps, industrial rails
+ * Mezzanine dining TOP-LEFT · east conveyor trays · kitchen BOTTOM
+ * Prep bridge center · plates at pass to belt · door SE clear
  */
 const COLLIDERS: Collider[] = [
   { x: 480, y: 16, w: 960, h: 32 },
   { x: 480, y: 524, w: 960, h: 32 },
   { x: 16, y: 270, w: 32, h: 540 },
   { x: 944, y: 270, w: 32, h: 540 },
-  { x: 220, y: 130, w: 320, h: 44 },
-  { x: 780, y: 280, w: 100, h: 260 },
-  { x: 280, y: 420, w: 360, h: 120 },
-  { x: 480, y: 300, w: 120, h: 50 },
+  { x: 220, y: 150, w: 320, h: 120 },
+  { x: 800, y: 300, w: 100, h: 280 },
+  { x: 300, y: 450, w: 420, h: 70 },
+  { x: 480, y: 300, w: 140, h: 50 },
   { x: 680, y: 400, w: 50, h: 40 },
-  { x: 90, y: 300, w: 70, h: 80 },
+  { x: 80, y: 300, w: 60, h: 90 },
 ];
 
 const TRAYS: BuffetTrayDef[] = [
-  { id: "chicken", x: 780, y: 200, label: "Chicken", accepts: "chicken_fried", max: 6, addPerStock: 2 },
-  { id: "shrimp", x: 780, y: 260, label: "Shrimp", accepts: "shrimp_fried", max: 4, addPerStock: 2 },
-  { id: "fries", x: 780, y: 320, label: "Fries", accepts: "fries", max: 10, addPerStock: 5 },
-  { id: "tomato", x: 780, y: 380, label: "Tomatoes", accepts: "tomato_grilled", max: 2, addPerStock: 2 },
-  { id: "pepper", x: 780, y: 440, label: "Peppers", accepts: "pepper_grilled", max: 2, addPerStock: 2 },
+  { id: "chicken", x: 800, y: 200, label: "Chicken", accepts: "chicken_fried", max: 6, addPerStock: 2 },
+  { id: "shrimp", x: 800, y: 260, label: "Shrimp", accepts: "shrimp_fried", max: 4, addPerStock: 2 },
+  { id: "fries", x: 800, y: 320, label: "Fries", accepts: "fries", max: 10, addPerStock: 5 },
+  { id: "tomato", x: 800, y: 380, label: "Tomatoes", accepts: "tomato_grilled", max: 2, addPerStock: 2 },
+  { id: "pepper", x: 800, y: 440, label: "Peppers", accepts: "pepper_grilled", max: 2, addPerStock: 2 },
 ];
 
 const APPLIANCES: ApplianceDef[] = [
-  { id: "fryer_a", x: 120, y: 470, kind: "fryer", label: "Fryer" },
-  { id: "fryer_b", x: 220, y: 470, kind: "fryer", label: "Fryer" },
-  { id: "hold_fryer_l", x: 120, y: 410, kind: "counter", label: "Hold" },
-  { id: "hold_fryer_r", x: 220, y: 410, kind: "counter", label: "Hold" },
-  { id: "flour_a", x: 320, y: 470, kind: "flour", label: "Flour" },
-  { id: "grill_panel_a", x: 320, y: 410, kind: "grill_panel", label: "Pan L" },
-  { id: "grill_panel_b", x: 380, y: 410, kind: "grill_panel", label: "Pan R" },
-  { id: "sink_a", x: 320, y: 480, kind: "sink", label: "Sink" },
+  { id: "pantry_chicken", x: 100, y: 470, kind: "pantry", label: "Chicken", dispenses: "chicken_raw" },
+  { id: "pantry_shrimp", x: 160, y: 470, kind: "pantry", label: "Shrimp", dispenses: "shrimp_raw" },
+  { id: "pantry_fries", x: 180, y: 410, kind: "pantry", label: "Raw fries", dispenses: "fries_raw" },
+  { id: "fryer_a", x: 240, y: 470, kind: "fryer", label: "Fryer" },
+  { id: "fryer_b", x: 320, y: 470, kind: "fryer", label: "Fryer" },
+  { id: "hold_fryer_l", x: 240, y: 410, kind: "counter", label: "Hold" },
+  { id: "hold_fryer_r", x: 320, y: 410, kind: "counter", label: "Hold" },
+  { id: "flour_a", x: 400, y: 470, kind: "flour", label: "Flour" },
+  { id: "grill_panel_a", x: 470, y: 455, kind: "grill_panel", label: "Pan L" },
+  { id: "grill_panel_b", x: 520, y: 455, kind: "grill_panel", label: "Pan R" },
+  { id: "sink_a", x: 580, y: 470, kind: "sink", label: "Sink" },
   { id: "plates", x: 680, y: 400, kind: "plates", label: "Plates", dispenses: "plate" },
-  { id: "trash_a", x: 90, y: 360, kind: "trash", label: "Trash" },
-  { id: "juice_a", x: 90, y: 280, kind: "juice", label: "Juice", dispenses: "juice" },
+  { id: "pantry_tomato", x: 640, y: 470, kind: "pantry", label: "Tomatoes", dispenses: "tomato" },
+  { id: "pantry_pepper", x: 700, y: 470, kind: "pantry", label: "Peppers", dispenses: "pepper" },
   { id: "prep_a", x: 440, y: 300, kind: "prep", label: "Chop" },
   { id: "prep_b", x: 520, y: 300, kind: "prep", label: "Chop" },
-  { id: "pantry_chicken", x: 60, y: 470, kind: "pantry", label: "Chicken", dispenses: "chicken_raw" },
-  { id: "pantry_shrimp", x: 60, y: 400, kind: "pantry", label: "Shrimp", dispenses: "shrimp_raw" },
-  { id: "pantry_fries", x: 140, y: 470, kind: "pantry", label: "Raw fries", dispenses: "fries_raw" },
-  { id: "pantry_tomato", x: 440, y: 470, kind: "pantry", label: "Tomatoes", dispenses: "tomato" },
-  { id: "pantry_pepper", x: 500, y: 470, kind: "pantry", label: "Peppers", dispenses: "pepper" },
+  { id: "juice_a", x: 80, y: 260, kind: "juice", label: "Juice", dispenses: "juice" },
+  { id: "trash_a", x: 80, y: 340, kind: "trash", label: "Trash" },
 ];
 
 const SEATS: CustomerSeat[] = [
@@ -143,51 +140,49 @@ function paint(scene: Phaser.Scene) {
     drawWoodFloor(ctx, 60, 60, 840, 460, "#8d6e63");
 
     drawBanner(ctx, "MARKET LOFT", "#455a64", "mezzanine · conveyor belt");
-    drawPipeRail(ctx, 720, 80, 720, 480);
-    for (const lx of [180, 360, 540]) drawHangingLamp(ctx, lx, 100);
+    drawPipeRail(ctx, 740, 80, 740, 480);
+    for (const lx of [200, 400, 560]) drawHangingLamp(ctx, lx, 95);
 
-    // Mezzanine dining top-left
+    // Mezzanine dining — even 2×4 grid
     ctx.fillStyle = "#37474f";
-    roundRect(ctx, 60, 100, 320, 120, 10, true);
+    roundRect(ctx, 60, 100, 320, 130, 10, true);
     ctx.fillStyle = "#546e7a";
-    roundRect(ctx, 68, 108, 304, 104, 8, true);
+    roundRect(ctx, 68, 108, 304, 114, 8, true);
     strokeInk(ctx, 3);
-    roundRect(ctx, 60, 100, 320, 120, 10, false);
+    roundRect(ctx, 60, 100, 320, 130, 10, false);
     for (const s of SEATS) drawPlaceSetting(ctx, s.x, s.y - 6);
 
-    // East conveyor belt + trays
+    // East conveyor belt
     ctx.fillStyle = "#455a64";
-    roundRect(ctx, 720, 160, 90, 320, 8, true);
+    roundRect(ctx, 750, 170, 100, 300, 8, true);
     ctx.fillStyle = "#607d8b";
-    for (let y = 170; y < 470; y += 28) {
-      ctx.fillRect(728, y, 74, 8);
-    }
+    for (let y = 180; y < 460; y += 28) ctx.fillRect(758, y, 84, 8);
     ctx.fillStyle = "#ffc107";
-    ctx.fillRect(720, 160, 6, 320);
-    ctx.fillRect(804, 160, 6, 320);
+    ctx.fillRect(750, 170, 6, 300);
+    ctx.fillRect(844, 170, 6, 300);
     for (const t of TRAYS) drawBuffetTraySlot(ctx, t.x, t.y);
 
-    // Open kitchen bottom-left
-    drawSteelCounter(ctx, 55, 380, 380, 130);
-    drawChickenCrate(ctx, 50, 430);
-    drawShrimpBowl(ctx, 50, 370);
-    drawPotatoCrate(ctx, 110, 430);
-    drawFryer(ctx, 90, 420);
-    drawFryer(ctx, 190, 420);
-    drawFlourBowl(ctx, 290, 430);
-    drawGrill(ctx, 340, 380);
-    drawSink(ctx, 290, 480);
-
-    // Center prep bridge
+    // Prep bridge — kitchen to belt
     drawSteelCounter(ctx, 410, 270, 160, 55);
     drawCuttingBoard(ctx, 420, 278);
     drawCuttingBoard(ctx, 500, 278);
-    drawTomatoCrate(ctx, 420, 430);
-    drawPepperCrate(ctx, 480, 430);
+    drawPotatoCrate(ctx, 360, 275);
 
+    // Bottom cook line — even spacing, faces north
+    drawSteelCounter(ctx, 80, 420, 640, 70);
+    drawChickenCrate(ctx, 90, 432);
+    drawShrimpBowl(ctx, 150, 432);
+    drawFryer(ctx, 200, 400);
+    drawFryer(ctx, 280, 400);
+    drawFlourBowl(ctx, 370, 430);
+    drawGrill(ctx, 440, 400);
+    drawSink(ctx, 540, 425);
     drawPlateStack(ctx, 650, 370);
-    drawJuiceMachine(ctx, 55, 250);
-    drawTrash(ctx, 55, 330);
+    drawTomatoCrate(ctx, 610, 432);
+    drawPepperCrate(ctx, 670, 430);
+
+    drawJuiceMachine(ctx, 45, 230);
+    drawTrash(ctx, 45, 310);
     drawDoor(ctx, 870, 480);
 
     strokeInk(ctx, 6);

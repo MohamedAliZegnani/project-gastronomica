@@ -36,7 +36,7 @@ export function Input({
         </span>
       )}
       <input
-        className={`rounded-xl border border-white/10 bg-[#0f1a14] px-3 py-2.5 text-ink outline-none focus:border-[color:var(--color-accent)] ${className}`}
+        className={`rounded-xl border border-white/10 bg-[#0c2422] px-3 py-2.5 text-ink outline-none focus:border-[color:var(--color-accent)] ${className}`}
         {...props}
       />
     </label>

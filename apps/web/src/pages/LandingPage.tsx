@@ -15,14 +15,14 @@ export function LandingPage() {
           className="absolute inset-0"
           style={{
             background:
-              "radial-gradient(ellipse 90% 70% at 70% 40%, rgba(212,160,23,0.18), transparent 50%), radial-gradient(ellipse 60% 50% at 15% 80%, rgba(124,179,66,0.12), transparent 45%), linear-gradient(165deg, #15241c 0%, #0c1410 55%, #0a120e 100%)",
+              "radial-gradient(ellipse 90% 70% at 70% 40%, rgba(245,197,24,0.16), transparent 50%), radial-gradient(ellipse 60% 50% at 15% 80%, rgba(46,196,182,0.18), transparent 45%), linear-gradient(165deg, #143d39 0%, #0c2422 55%, #081a18 100%)",
           }}
         />
         <div
           className="pointer-events-none absolute inset-0 opacity-40"
           style={{
             backgroundImage:
-              "repeating-linear-gradient(90deg, transparent, transparent 47px, rgba(243,239,230,0.03) 48px), repeating-linear-gradient(0deg, transparent, transparent 47px, rgba(243,239,230,0.03) 48px)",
+              "repeating-linear-gradient(90deg, transparent, transparent 47px, rgba(238,247,245,0.035) 48px), repeating-linear-gradient(0deg, transparent, transparent 47px, rgba(238,247,245,0.03) 48px)",
           }}
         />
         <div className="relative mx-auto flex min-h-[min(92vh,820px)] max-w-6xl flex-col justify-end px-4 pb-16 pt-24 md:justify-center md:pb-24">
