@@ -796,7 +796,14 @@ export function drawSinkFacingWest(ctx: CanvasRenderingContext2D, x: number, y: 
   roundRect(ctx, x, y, 48, 58, 8, false);
 }
 
-export function drawFryer(ctx: CanvasRenderingContext2D, x: number, y: number) {
+export function drawFryer(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  /** Clockwise degrees. Use 90 on tall/narrow side counters. */
+  rotateDeg = 0,
+) {
+  const paint = () => {
   // Soft ground shadow
   ctx.fillStyle = "rgba(0,0,0,0.25)";
   ctx.beginPath();
@@ -950,6 +957,21 @@ export function drawFryer(ctx: CanvasRenderingContext2D, x: number, y: number) {
   strokeInk(ctx, 4);
   roundRect(ctx, x, y + 2, 96, 48, 10, false);
   roundRect(ctx, x + 4, y + 42, 88, 48, 10, false);
+  };
+
+  if (!rotateDeg) {
+    paint();
+    return;
+  }
+  // Pivot around the fryer's visual center so it stays planted on the counter.
+  const cx = x + 48;
+  const cy = y + 48;
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate((rotateDeg * Math.PI) / 180);
+  ctx.translate(-cx, -cy);
+  paint();
+  ctx.restore();
 }
 
 /** Restaurant entrance door. */
@@ -1002,7 +1024,14 @@ export function drawDoor(ctx: CanvasRenderingContext2D, x: number, y: number) {
 }
 
 /** Beach / mall juice dispenser — glass tank of orange juice. */
-export function drawJuiceMachine(ctx: CanvasRenderingContext2D, x: number, y: number) {
+export function drawJuiceMachine(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  /** Clockwise degrees. Use 180 so the spout faces dining / north. */
+  rotateDeg = 0,
+) {
+  const paint = () => {
   ctx.fillStyle = "rgba(0,0,0,0.18)";
   ctx.beginPath();
   ctx.ellipse(x + 28, y + 72, 26, 7, 0, 0, Math.PI * 2);
@@ -1046,6 +1075,20 @@ export function drawJuiceMachine(ctx: CanvasRenderingContext2D, x: number, y: nu
   strokeInk(ctx, 3);
   roundRect(ctx, x + 8, y, 40, 36, 8, false);
   roundRect(ctx, x + 4, y + 28, 48, 42, 8, false);
+  };
+
+  if (!rotateDeg) {
+    paint();
+    return;
+  }
+  const cx = x + 28;
+  const cy = y + 36;
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate((rotateDeg * Math.PI) / 180);
+  ctx.translate(-cx, -cy);
+  paint();
+  ctx.restore();
 }
 
 /** Soft-serve ice cream machine. */
